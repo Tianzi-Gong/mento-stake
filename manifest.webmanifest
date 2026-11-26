@@ -1,0 +1,14 @@
+{
+  "name": "门托·每日一桩",
+  "short_name": "每日一桩",
+  "description": "由内而外，调好身体。每天站桩，记录自己的身体变化。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
