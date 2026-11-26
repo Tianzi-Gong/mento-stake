@@ -306,6 +306,7 @@
       var raw = localStorage.getItem(KEY);
       if(raw){
         var s = JSON.parse(raw);
+        // 迁移：旧格式 {date: {single}} -> {date: [sessions]}
         if(s && s.records){
           var changed = false;
           for(var d in s.records){
