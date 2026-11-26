@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="每日一桩">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>门托·每日一桩</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#f5f1e8;
+    --card:#ffffff;
+    --ink:#2a2725;
+    --ink-soft:#6b645c;
+    --ink-faint:#a39b8f;
+    --line:#e9e2d5;
+    --cinnabar:#c0563c;
+    --gold:#b98a3e;
+    --green:#5a7a5a;
+    --blue:#5a7390;
+    --shadow:0 8px 28px rgba(60,48,30,.08);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans SC","PingFang SC",-apple-system,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:"Noto Serif SC","Songti SC",serif;}
+
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding-bottom:88px;
+    position:relative;
+  }
+
+  .top{
+    padding:calc(20px + env(safe-area-inset-top)) 20px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{font-family:"Noto Serif SC",serif;font-weight:700;font-size:19px;letter-spacing:1px;}
+  .brand small{display:block;font-family:"Noto Sans SC",sans-serif;font-weight:400;font-size:11px;color:var(--ink-faint);letter-spacing:2px;margin-top:2px;}
+
+  .streak-card{
+    margin:6px 20px 0;
+    background:linear-gradient(135deg,#2a2725,#3d3831);
+    color:#f5f1e8;
+    border-radius:20px;
+    padding:26px 22px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:var(--shadow);
+  }
+  .streak-card::after{
+    content:"";
+    position:absolute;right:-30px;top:-30px;
+    width:130px;height:130px;border-radius:50%;
+    background:radial-gradient(circle,rgba(192,86,60,.35),transparent 70%);
+  }
+  .streak-label{font-size:13px;color:#d8cfc2;letter-spacing:2px;}
+  .streak-num{font-family:"Noto Serif SC",serif;font-size:56px;font-weight:900;line-height:1.1;margin:2px 0;}
+  .streak-num span{font-size:20px;font-weight:500;color:#d8cfc2;margin-left:6px;}
+  .streak-tip{font-size:12px;color:#bfb5a6;}
+
+  .card{
+    background:var(--card);
+    border-radius:18px;
+    padding:20px;
+    margin:16px 20px 0;
+    box-shadow:var(--shadow);
+  }
+  .card-title{font-size:14px;font-weight:700;letter-spacing:1px;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+
+  .today-hero{text-align:center;padding:26px 20px;}
+  .today-hero .done-mark{width:64px;height:64px;border-radius:50%;background:#ecf0ea;color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:30px;}
+  .today-hero h3{font-family:"Noto Serif SC",serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+  .today-hero p{color:var(--ink-soft);font-size:13px;}
+  .today-hero .mt{margin-top:16px;}
+
+  .btn-primary{
+    display:block;width:100%;
+    background:var(--cinnabar);
+    color:#fff;border:none;border-radius:16px;
+    padding:17px;font-size:17px;font-weight:700;letter-spacing:2px;
+    cursor:pointer;text-align:center;
+    box-shadow:0 8px 20px rgba(192,86,60,.28);
+    transition:transform .08s ease;
+  }
+  .btn-primary:active{transform:scale(.97);}
+
+  .today-scores{display:flex;gap:10px;margin-top:14px;}
+  .score-pill{flex:1;background:#f8f5ee;border-radius:12px;padding:10px 6px;text-align:center;}
+  .score-pill .k{font-size:11px;color:var(--ink-faint);letter-spacing:1px;}
+  .score-pill .v{font-size:18px;font-weight:700;margin-top:2px;}
+
+  #tabbar{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:0;width:100%;max-width:480px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .tab{flex:1;text-align:center;padding:10px 0 8px;cursor:pointer;color:var(--ink-faint);transition:color .15s;}
+  .tab .ic{font-size:20px;line-height:1;display:block;}
+  .tab .lb{font-size:11px;margin-top:3px;letter-spacing:1px;}
+  .tab.active{color:var(--cinnabar);}
+
+  .overlay{
+    position:fixed;inset:0;background:var(--bg);
+    z-index:50;display:none;flex-direction:column;
+    max-width:480px;margin:0 auto;
+  }
+  .overlay.show{display:flex;}
+
+  #timerOverlay{align-items:stretch;justify-content:center;}
+  .timer-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;}
+  .timer-clock{font-family:"Noto Serif SC",serif;font-size:76px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:2px;}
+  .timer-hint{color:var(--ink-soft);font-size:14px;margin-top:14px;letter-spacing:1px;}
+  .timer-bar{width:100%;height:4px;background:var(--line);border-radius:2px;margin-top:34px;overflow:hidden;}
+  .timer-bar i{display:block;height:100%;width:0;background:var(--cinnabar);border-radius:2px;transition:width 1s linear;}
+  .timer-bottom{padding:20px 24px calc(24px + env(safe-area-inset-bottom));}
+
+  #ritualOverlay{align-items:center;justify-content:center;background:linear-gradient(180deg,#2a2725,#1f1d1a);}
+  .ritual-core{text-align:center;color:#f5f1e8;padding:30px;}
+  .ritual-rings{position:relative;width:150px;height:150px;margin:0 auto 20px;}
+  .ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(217,180,124,.7);border-radius:50%;animation:ringPulse 1.8s ease-out infinite;}
+  .ring.r1{width:60px;height:60px;animation-delay:0s;}
+  .ring.r2{width:110px;height:110px;animation-delay:.45s;}
+  .ring.r3{width:160px;height:160px;animation-delay:.9s;}
+  @keyframes ringPulse{0%{opacity:.9;transform:translate(-50%,-50%) scale(.6);}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15);}}
+  .ritual-title{font-family:"Noto Serif SC",serif;font-size:24px;font-weight:900;letter-spacing:6px;margin-bottom:8px;}
+  .ritual-meta{color:#d8cfc2;font-size:14px;letter-spacing:1px;}
+  .ritual-meta b{color:#f5f1e8;font-family:"Noto Serif SC",serif;font-size:18px;font-weight:700;}
+  .ritual-cta{margin-top:34px;}
+  .btn-gold{display:block;width:100%;background:linear-gradient(135deg,#b98a3e,#d3a85f);color:#2a2725;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;}
+  .btn-gold:active{transform:scale(.97);}
+
+  #scoreOverlay{align-items:stretch;}
+  .score-wrap{flex:1;overflow-y:auto;padding:calc(24px + env(safe-area-inset-top)) 24px 30px;}
+  .score-head{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:700;margin-bottom:4px;}
+  .score-sub{color:var(--ink-soft);font-size:13px;margin-bottom:26px;}
+  .dim{margin-bottom:28px;}
+  .dim-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .dim-name{font-size:16px;font-weight:700;}
+  .dim-desc{font-size:12px;color:var(--ink-faint);}
+  .dim-opts{display:flex;gap:8px;}
+  .dim-opts button{flex:1;background:#f8f5ee;border:1.5px solid transparent;border-radius:12px;padding:12px 0;font-size:15px;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:all .12s;}
+  .dim-opts button.sel{background:#fff;border-color:var(--cinnabar);color:var(--cinnabar);box-shadow:0 4px 12px rgba(192,86,60,.15);}
+
+  .stats-row{display:flex;gap:12px;}
+  .stat-box{flex:1;background:var(--card);border-radius:16px;padding:16px;text-align:center;box-shadow:var(--shadow);}
+  .stat-box .n{font-family:"Noto Serif SC",serif;font-size:26px;font-weight:900;}
+  .stat-box .t{font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin-top:2px;}
+
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px;}
+  .cal .wd{text-align:center;font-size:11px;color:var(--ink-faint);padding:4px 0;}
+  .cal .day{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-soft);background:#f8f5ee;position:relative;}
+  .cal .day.today{border:1.5px solid var(--cinnabar);color:var(--cinnabar);font-weight:700;background:#fff;}
+  .cal .day.done{background:var(--ink);color:#f5f1e8;font-weight:700;}
+  .cal .day.done::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--cinnabar);}
+  .cal .day.empty{visibility:hidden;}
+
+  .chart-box{width:100%;height:180px;margin-top:8px;}
+  .legend{display:flex;gap:16px;margin-top:8px;justify-content:center;font-size:12px;color:var(--ink-soft);}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+
+  .demo-step{display:flex;gap:14px;margin-bottom:18px;}
+  .demo-step .idx{flex:0 0 34px;height:34px;border-radius:50%;background:var(--ink);color:#f5f1e8;display:flex;align-items:center;justify-content:center;font-family:"Noto Serif SC",serif;font-weight:700;font-size:15px;}
+  .demo-step h4{font-size:15px;font-weight:700;margin-bottom:3px;}
+  .demo-step p{font-size:13px;color:var(--ink-soft);}
+  .placeholder{border:1.5px dashed var(--line);border-radius:16px;padding:26px;text-align:center;color:var(--ink-faint);font-size:13px;}
+
+  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:rgba(42,39,37,.92);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;letter-spacing:1px;opacity:0;transition:all .25s;z-index:99;pointer-events:none;max-width:80%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">门托·每日一桩<small>由内而外 · 调好身体</small></div>
+    <div style="font-size:12px;color:var(--ink-faint);letter-spacing:1px;" id="dateLabel"></div>
+  </header>
+
+  <!-- ===== 视图：今日 ===== -->
+  <section id="viewToday">
+    <div class="streak-card">
+      <div class="streak-label">连续站桩</div>
+      <div class="streak-num" id="streakNum">0<span>天</span></div>
+      <div class="streak-tip" id="streakTip">今天还没站，先开始第一步。</div>
+    </div>
+
+    <div class="card today-hero" id="todayCard"></div>
+  </section>
+
+  <!-- ===== 视图：记录 ===== -->
+  <section id="viewHistory" style="display:none;">
+    <div class="stats-row" style="padding:16px 20px 0;">
+      <div class="stat-box"><div class="n" id="statDays">0</div><div class="t">累计天数</div></div>
+      <div class="stat-box"><div class="n" id="statMins">0</div><div class="t">累计分钟</div></div>
+      <div class="stat-box"><div class="n" id="statStreak">0</div><div class="t">最长连击</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">本月打卡</div>
+      <div class="cal" id="calendar"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">身体感受 · 近14天</div>
+      <div class="chart-box" id="chartBox"></div>
+      <div class="legend">
+        <span><i style="background:var(--green);"></i>松</span>
+        <span><i style="background:var(--blue);"></i>稳</span>
+        <span><i style="background:var(--cinnabar);"></i>神</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 视图：要领 ===== -->
+  <section id="viewDemo" style="display:none;">
+    <div class="card">
+      <div class="card-title">基础站桩要领</div>
+      <div class="demo-step"><div class="idx">1</div><div><h4>双脚与肩同宽</h4><p>脚尖朝前，重心落于脚掌，不偏前不偏后。</p></div></div>
+      <div class="demo-step"><div class="idx">2</div><div><h4>膝盖微屈</h4><p>不锁死、不过度弯曲，感觉像微微坐在高凳上。</p></div></div>
+      <div class="demo-step"><div class="idx">3</div><div><h4>松腰落胯</h4><p>尾闾微收，命门自然放松，不塌腰、不撅臀。</p></div></div>
+      <div class="demo-step"><div class="idx">4</div><div><h4>虚领顶劲</h4><p>下巴微收，头顶如有一根线轻轻上提。</p></div></div>
+      <div class="demo-step"><div class="idx">5</div><div><h4>沉肩坠肘</h4><p>肩膀放松下沉，双臂自然抱圆，呼吸自然。</p></div></div>
+    </div>
+    <div class="card">
+      <div class="placeholder">📱 示范视频待补充<br>（此处置入门跟练视频，替换占位即可）</div>
+    </div>
+  </section>
+</div>
+
+<nav id="tabbar">
+  <div class="tab active" data-view="today"><span class="ic">桩</span><span class="lb">今日</span></div>
+  <div class="tab" data-view="history"><span class="ic">记</span><span class="lb">记录</span></div>
+  <div class="tab" data-view="demo"><span class="ic">法</span><span class="lb">要领</span></div>
+</nav>
+
+<div class="overlay" id="timerOverlay">
+  <div class="timer-wrap">
+    <div class="timer-clock" id="timerClock">00:00</div>
+    <div class="timer-hint">放松 · 呼吸自然 · 保持桩架</div>
+    <div class="timer-bar"><i id="timerBarFill"></i></div>
+  </div>
+  <div class="timer-bottom"><button class="btn-primary" id="btnFinish">收 桩</button></div>
+</div>
+
+<div class="overlay" id="ritualOverlay">
+  <div class="ritual-core">
+    <div class="ritual-rings"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div></div>
+    <div class="ritual-title">今日收桩</div>
+    <div class="ritual-meta">本次 <b id="ritualMins">0</b> 分钟 · 今日第 <b id="ritualCount">1</b> 次 · 连续 <b id="ritualStreak">0</b> 天</div>
+    <div class="ritual-cta"><button class="btn-gold" id="btnScore">记录今日感受</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="scoreOverlay">
+  <div class="score-wrap">
+    <div class="score-head">今日身体感受</div>
+    <div class="score-sub">收桩后，给自己的状态打个分</div>
+    <div class="dim">
+      <div class="dim-top"><span class="dim-name">松</span><span class="dim-desc">身体是紧绷还是放松</span></div>
+      <div class="dim-opts" data-dim="song"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></div>
+    </div>
+    <div class="dim">
+      <div class="dim-top"><span class="dim-name">稳</span><span class="dim-desc">桩架是晃动还是安稳</span></div>
+      <div class="dim-opts" data-dim="wen"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></div>
+    </div>
+    <div class="dim">
+      <div class="dim-top"><span class="dim-name">神</span><span class="dim-desc">精神是疲惫还是清明</span></div>
+      <div class="dim-opts" data-dim="shen"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn-primary" id="btnSaveScore">完成收桩</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "mento_daily_stake_v1";
+  var TARGET_MIN = 15;
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){
+        var s = JSON.parse(raw);
+        if(s && s.records){
+          var changed = false;
+          for(var d in s.records){
+            if(!Array.isArray(s.records[d])){
+              s.records[d] = [s.records[d]];
+              changed = true;
+            }
+          }
+          if(changed){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+        }
+        return s;
+      }
+    }catch(e){}
+    return { records:{} };
+  }
+  function save(s){
+    try{ localStorage.setItem(KEY, JSON.stringify(s)); }
+    catch(e){ toast("本地存储不可用，数据可能不会保留"); }
+  }
+  function fmt(d){
+    var y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2);
+    return y+"-"+m+"-"+dd;
+  }
+  function todayStr(){ return fmt(new Date()); }
+  function daySessions(d){ return (state.records[d] || []); }
+
+  var state = load();
+  var timer = { start:null, interval:null, seconds:0, mins:0 };
+  var pending = { mins:0, count:1 };
+  var score = { song:0, wen:0, shen:0 };
+  var curView = "today";
+
+  function $(id){ return document.getElementById(id); }
+  function toast(msg){
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._h);
+    t._h = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  /* ---------- 连续天数 ---------- */
+  function calcStreak(){
+    var streak = 0, d = new Date();
+    if(daySessions(fmt(d)).length === 0){ d.setDate(d.getDate()-1); }
+    while(daySessions(fmt(d)).length > 0){ streak++; d.setDate(d.getDate()-1); }
+    return streak;
+  }
+  function longestStreak(){
+    var dates = Object.keys(state.records).sort();
+    var best=0, cur=0, prev=null;
+    for(var i=0;i<dates.length;i++){
+      var d = new Date(dates[i]+"T00:00:00");
+      if(prev){ cur = ((d-prev)/86400000 === 1) ? cur+1 : 1; } else { cur=1; }
+      if(cur>best) best=cur;
+      prev = d;
+    }
+    return best;
+  }
+
+  /* ---------- 视图切换 ---------- */
+  function switchView(v){
+    curView = v;
+    ["today","history","demo"].forEach(function(k){
+      $("view"+(k.charAt(0).toUpperCase()+k.slice(1))).style.display = (k===v)?"":"none";
+    });
+    document.querySelectorAll("#tabbar .tab").forEach(function(t){
+      t.classList.toggle("active", t.getAttribute("data-view")===v);
+    });
+    if(v==="history") renderHistory();
+  }
+  document.querySelectorAll("#tabbar .tab").forEach(function(t){
+    t.addEventListener("click", function(){ switchView(t.getAttribute("data-view")); });
+  });
+
+  /* ---------- 今日渲染 ---------- */
+  function renderToday(){
+    var sessions = daySessions(todayStr());
+    var streak = calcStreak();
+    $("streakNum").innerHTML = streak + "<span>天</span>";
+    $("dateLabel").textContent = fmt(new Date()).slice(5).replace("-","月")+"日";
+
+    var card = $("todayCard");
+    if(sessions.length > 0){
+      var totalMins = 0;
+      sessions.forEach(function(r){ totalMins += r.minutes; });
+      var last = sessions[sessions.length-1];
+      var tip = streak===1 ? "第一天，好的开始。" :
+                streak>=7 ? "已经连续一周，身体在一点点变好。" :
+                "今天站过了，随时可以再补一桩。";
+      $("streakTip").textContent = tip;
+      var html =
+        '<div class="done-mark">✓</div>' +
+        '<h3>今日已站 '+sessions.length+' 次</h3>' +
+        '<p>累计 <b>'+totalMins+'</b> 分钟</p>';
+      if(last.song){
+        html += '<div class="today-scores">' +
+          '<div class="score-pill"><div class="k">松</div><div class="v">'+last.song+'</div></div>' +
+          '<div class="score-pill"><div class="k">稳</div><div class="v">'+last.wen+'</div></div>' +
+          '<div class="score-pill"><div class="k">神</div><div class="v">'+last.shen+'</div></div>' +
+        '</div>';
+      }
+      html += '<div class="mt"><button class="btn-primary" id="btnAgain">再站一次</button></div>';
+      card.innerHTML = html;
+      $("btnAgain").addEventListener("click", startTimer);
+    } else {
+      $("streakTip").textContent = streak>0 ? "昨天站过了，今天再续上。" : "今天还没站，先开始第一步。";
+      card.innerHTML =
+        '<h3 style="font-family:\'Noto Serif SC\',serif;font-size:20px;font-weight:700;margin-bottom:6px;">今日一桩</h3>' +
+        '<p style="color:var(--ink-soft);font-size:13px;margin-bottom:20px;">不用站很久，先把形调好，站多久看状态。</p>' +
+        '<button class="btn-primary" id="btnStart">开始站桩</button>';
+      $("btnStart").addEventListener("click", startTimer);
+    }
+  }
+
+  /* ---------- 计时器 ---------- */
+  function startTimer(){
+    timer.start = Date.now();
+    timer.seconds = 0;
+    $("timerClock").textContent = "00:00";
+    $("timerBarFill").style.width = "0%";
+    $("timerOverlay").classList.add("show");
+    clearInterval(timer.interval);
+    timer.interval = setInterval(function(){
+      timer.seconds = Math.floor((Date.now()-timer.start)/1000);
+      var m = String(Math.floor(timer.seconds/60)).padStart(2,"0");
+      var s = String(timer.seconds%60).padStart(2,"0");
+      $("timerClock").textContent = m+":"+s;
+      $("timerBarFill").style.width = Math.min(100, (timer.seconds/(TARGET_MIN*60))*100) + "%";
+    }, 500);
+  }
+  $("btnFinish").addEventListener("click", function(){
+    clearInterval(timer.interval);
+    timer.mins = Math.max(1, Math.round(timer.seconds/60));
+    pending.mins = timer.mins;
+    pending.count = daySessions(todayStr()).length + 1;
+    $("timerOverlay").classList.remove("show");
+    openRitual();
+  });
+
+  /* ---------- 收桩仪式 ---------- */
+  function openRitual(){
+    $("ritualMins").textContent = pending.mins;
+    $("ritualCount").textContent = pending.count;
+    $("ritualStreak").textContent = calcStreak() + (daySessions(todayStr()).length===0 ? 1 : 0);
+    $("ritualOverlay").classList.add("show");
+    playChime();
+  }
+  $("btnScore").addEventListener("click", function(){
+    $("ritualOverlay").classList.remove("show");
+    resetScore();
+    $("scoreOverlay").classList.add("show");
+  });
+
+  /* ---------- 打分 ---------- */
+  function resetScore(){
+    score = { song:0, wen:0, shen:0 };
+    document.querySelectorAll(".dim-opts").forEach(function(group){
+      group.querySelectorAll("button").forEach(function(b){ b.classList.remove("sel"); });
+    });
+  }
+  document.querySelectorAll(".dim-opts").forEach(function(group){
+    group.addEventListener("click", function(e){
+      if(e.target.tagName !== "BUTTON") return;
+      var dim = group.getAttribute("data-dim");
+      var val = parseInt(e.target.textContent, 10);
+      score[dim] = val;
+      group.querySelectorAll("button").forEach(function(b){
+        b.classList.toggle("sel", parseInt(b.textContent,10)===val);
+      });
+    });
+  });
+  $("btnSaveScore").addEventListener("click", function(){
+    if(!score.song || !score.wen || !score.shen){ toast("三个都打个分，再完成收桩"); return; }
+    var d = todayStr();
+    if(!state.records[d]) state.records[d] = [];
+    state.records[d].push({
+      minutes: pending.mins,
+      song: score.song,
+      wen: score.wen,
+      shen: score.shen,
+      ts: Date.now()
+    });
+    save(state);
+    $("scoreOverlay").classList.remove("show");
+    renderToday();
+    toast("收桩完成 · 今日 "+state.records[d].length+" 次");
+  });
+
+  /* ---------- 磬声 ---------- */
+  function playChime(){
+    try{
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return;
+      var ctx = new Ctx();
+      [659.25, 987.77, 1318.5].forEach(function(f, i){
+        var osc = ctx.createOscillator();
+        var g = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        var t = ctx.currentTime + i*0.12;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.18, t+0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+2.6);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(t); osc.stop(t+2.8);
+      });
+    }catch(e){}
+  }
+
+  /* ---------- 记录视图 ---------- */
+  function renderHistory(){
+    var dates = Object.keys(state.records);
+    var totalMins = 0;
+    dates.forEach(function(d){
+      daySessions(d).forEach(function(r){ totalMins += r.minutes; });
+    });
+    $("statDays").textContent = dates.length;
+    $("statMins").textContent = totalMins;
+    $("statStreak").textContent = longestStreak();
+    renderCalendar();
+    renderChart();
+  }
+
+  function renderCalendar(){
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth();
+    var first = new Date(y, m, 1).getDay();
+    var days = new Date(y, m+1, 0).getDate();
+    var html = "";
+    ["日","一","二","三","四","五","六"].forEach(function(w){ html += '<div class="wd">'+w+'</div>'; });
+    for(var i=0;i<first;i++){ html += '<div class="day empty"></div>'; }
+    for(var d=1; d<=days; d++){
+      var ds = y+"-"+("0"+(m+1)).slice(-2)+"-"+("0"+d).slice(-2);
+      var cls = "day";
+      if(ds === todayStr()) cls += " today";
+      if(daySessions(ds).length > 0) cls += " done";
+      html += '<div class="'+cls+'">'+d+'</div>';
+    }
+    $("calendar").innerHTML = html;
+  }
+
+  function renderChart(){
+    var box = $("chartBox");
+    var days = [];
+    for(var i=13;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); days.push(fmt(d)); }
+    var hasData = days.some(function(d){ return daySessions(d).length > 0; });
+    if(!hasData){
+      box.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:13px;">坚持几天后，这里会出现你的身体曲线</div>';
+      return;
+    }
+    var W = box.clientWidth || 320, H = 180;
+    var padL=30, padR=14, padT=16, padB=24;
+    var iw = W-padL-padR, ih = H-padT-padB;
+    var colors = { song:"#5a7a5a", wen:"#5a7390", shen:"#c0563c" };
+    function lastOf(d){ var s=daySessions(d); return s.length ? s[s.length-1] : null; }
+    function pts(key){
+      var arr = [];
+      days.forEach(function(d, idx){
+        var r = lastOf(d);
+        if(r && r[key]){
+          arr.push([padL + (idx/(days.length-1))*iw, padT + (1-(r[key]-1)/4)*ih]);
+        }
+      });
+      return arr;
+    }
+    var svg = '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">';
+    for(var g=1; g<=5; g++){
+      var gy = padT + (1-(g-1)/4)*ih;
+      svg += '<line x1="'+padL+'" y1="'+gy+'" x2="'+(W-padR)+'" y2="'+gy+'" stroke="#e9e2d5" stroke-width="1"/>';
+      svg += '<text x="'+(padL-8)+'" y="'+(gy+4)+'" text-anchor="end" font-size="10" fill="#a39b8f">'+g+'</text>';
+    }
+    ["song","wen","shen"].forEach(function(key){
+      var p = pts(key);
+      if(p.length < 2) return;
+      var d = "M"+p.map(function(x){return x[0].toFixed(1)+" "+x[1].toFixed(1);}).join(" L");
+      svg += '<path d="'+d+'" fill="none" stroke="'+colors[key]+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+      p.forEach(function(pt){ svg += '<circle cx="'+pt[0]+'" cy="'+pt[1]+'" r="3" fill="'+colors[key]+'"/>'; });
+    });
+    svg += '</svg>';
+    box.innerHTML = svg;
+  }
+
+  renderToday();
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>
