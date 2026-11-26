@@ -1,5 +1,5 @@
-const CACHE = "mento-stake-v1";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon.svg"];
+const CACHE = "mento-stake-v2";
+const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
