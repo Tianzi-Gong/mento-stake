@@ -189,6 +189,24 @@
   .demo-step p{font-size:13px;color:var(--ink-soft);}
   .placeholder{border:1.5px dashed var(--line);border-radius:16px;padding:26px;text-align:center;color:var(--ink-faint);font-size:13px;}
 
+  .install-bar{
+    display:none;align-items:center;gap:10px;
+    margin:10px 20px 0;padding:11px 14px;
+    background:#fff;border:1px solid var(--line);border-radius:14px;
+    box-shadow:var(--shadow);
+  }
+  .install-bar span{flex:1;font-size:12.5px;color:var(--ink-soft);letter-spacing:.5px;}
+  .install-bar button{
+    border:none;background:#f3ede2;color:var(--ink);border-radius:10px;
+    padding:7px 12px;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;
+  }
+  .install-bar .x{background:transparent;color:var(--ink-faint);padding:4px 6px;font-size:14px;font-weight:400;}
+  .how-step{display:flex;gap:12px;margin-bottom:16px;}
+  .how-step .n{flex:0 0 26px;height:26px;border-radius:50%;background:#f3ede2;color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .how-step p{font-size:13.5px;color:var(--ink-soft);}
+  .how-step p b{color:var(--ink);}
+  .how-tip{margin-top:6px;padding:12px 14px;background:#f8f5ee;border-radius:12px;font-size:12.5px;color:var(--ink-soft);}
+
   .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);background:rgba(42,39,37,.92);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;letter-spacing:1px;opacity:0;transition:all .25s;z-index:99;pointer-events:none;max-width:80%;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -199,6 +217,12 @@
     <div class="brand">门托·每日一桩<small>由内而外 · 调好身体</small></div>
     <div style="font-size:12px;color:var(--ink-faint);letter-spacing:1px;" id="dateLabel"></div>
   </header>
+
+  <div class="install-bar" id="installBar">
+    <span>加到手机桌面，下次一点就开</span>
+    <button id="installHow">怎么加</button>
+    <button class="x" id="installClose" aria-label="关闭">×</button>
+  </div>
 
   <!-- ===== 视图：今日 ===== -->
   <section id="viewToday">
@@ -292,6 +316,31 @@
       <div class="dim-opts" data-dim="shen"><button>1</button><button>2</button><button>3</button><button>4</button><button>5</button></div>
     </div>
     <div style="margin-top:12px;"><button class="btn-primary" id="btnSaveScore">完成收桩</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="installOverlay">
+  <div class="score-wrap">
+    <div class="score-head">把「每日一桩」放到手机桌面</div>
+    <div class="score-sub">放好之后，不再需要记网址，图标一点就开。</div>
+
+    <div class="dim" style="margin-bottom:22px;">
+      <div class="dim-top"><span class="dim-name">苹果 iPhone</span><span class="dim-desc">用 Safari 打开</span></div>
+      <div class="how-step"><div class="n">1</div><p>先点右上角 <b>···</b>，选「<b>在浏览器打开</b>」（微信里必须走这一步）。</p></div>
+      <div class="how-step"><div class="n">2</div><p>在 Safari 底部点 <b>分享</b>（方框向上箭头）。</p></div>
+      <div class="how-step"><div class="n">3</div><p>往下滑找到「<b>添加到主屏幕</b>」，点右上角「添加」。</p></div>
+    </div>
+
+    <div class="dim">
+      <div class="dim-top"><span class="dim-name">安卓</span><span class="dim-desc">用 Chrome 等浏览器打开</span></div>
+      <div class="how-step"><div class="n">1</div><p>同样先点右上角 <b>···</b> → 「<b>在浏览器打开</b>」。</p></div>
+      <div class="how-step"><div class="n">2</div><p>点浏览器右上角菜单，选「<b>安装应用</b>」或「<b>添加到主屏幕</b>」。</p></div>
+      <div class="how-step"><div class="n">3</div><p>确认后桌面会出现「每日一桩」图标。</p></div>
+    </div>
+
+    <div class="how-tip">打卡记录存在你自己的手机里，换手机或清理浏览器数据会清空。想留存，就别用无痕模式。</div>
+
+    <div style="margin-top:22px;"><button class="btn-primary" id="installDone">知道了</button></div>
   </div>
 </div>
 
@@ -590,6 +639,24 @@
     svg += '</svg>';
     box.innerHTML = svg;
   }
+
+  /* ---------- 添加到桌面提示 ---------- */
+  (function(){
+    var TIP_KEY = "mento_install_tip_v1";
+    var seen = false;
+    try{ seen = !!localStorage.getItem(TIP_KEY); }catch(e){}
+    var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+    var bar = $("installBar");
+    if(!bar) return;
+    if(!standalone && !seen) bar.style.display = "flex";
+    $("installHow").addEventListener("click", function(){ $("installOverlay").classList.add("show"); });
+    $("installClose").addEventListener("click", function(){ bar.style.display = "none"; });
+    $("installDone").addEventListener("click", function(){
+      $("installOverlay").classList.remove("show");
+      bar.style.display = "none";
+      try{ localStorage.setItem(TIP_KEY, "1"); }catch(e){}
+    });
+  })();
 
   renderToday();
 
